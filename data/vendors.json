@@ -1,0 +1,36 @@
+{
+  "id_a": {
+    "name": "Jackson's Plumbing",
+    "serviceFee": "$80",
+    "hourlyCharge": "$100",
+    "services": [
+      {
+        "name": "Fix leaks",
+        "description": "Find and fix leaks",
+        "durationMinutes": 90
+      },
+      {
+        "name": "Unclog drain",
+        "description": "Unclog drains and toilets",
+        "durationMinutes": 45
+      }
+    ]
+  },
+  "id_b": {
+    "name": "Emily's Electrical",
+    "serviceFee": "$0",
+    "hourlyCharge": "$120",
+    "services": [
+      {
+        "name": "Replace light bulbs",
+        "description": "Replace light bulbs",
+        "durationMinutes": 30
+      },
+      {
+        "name": "Install fixture",
+        "description": "Install lights, fans, etc",
+        "durationMinutes": 120
+      }
+    ]
+  }
+}
