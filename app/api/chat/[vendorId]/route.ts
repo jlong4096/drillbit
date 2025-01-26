@@ -3,7 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { anthropic } from "@ai-sdk/anthropic";
 import { streamText, tool } from "ai";
 import { z } from "zod";
-import { getVendors, lookupSchedule, Availability } from "../../vendor/route";
+import { sendText } from "./sms";
+import { getVendors, lookupSchedule, Availability } from "../../vendor";
+import { getUser } from "../../user";
+
+const ANTHROPIC_MODEL =
+  process.env.ANTHROPIC_MODEL || "claude-3-haiku-20240307";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -23,7 +28,7 @@ function formatDateTimeInTimezone(timezone: string) {
   return new Intl.DateTimeFormat("en-US", options).format(new Date());
 }
 
-export function errorHandler(error: unknown) {
+function errorHandler(error: unknown) {
   if (error == null) {
     return "unknown error";
   }
@@ -75,19 +80,18 @@ export async function POST(
     await fs.readFile(process.cwd() + "/prompts/system.txt")
   ).toString();
 
+  const user = getUser();
+
   let sysPrompt = SYS_PROMPT;
+  sysPrompt = sysPrompt.replaceAll("{ customer_name }", user.name);
   sysPrompt = sysPrompt.replaceAll("{ vendor_name }", vendor.name);
   sysPrompt = sysPrompt.replaceAll("{ vendor_services }", services);
   sysPrompt = sysPrompt.replaceAll("{ service_fee }", vendor.serviceFee);
   sysPrompt = sysPrompt.replaceAll("{ hourly_charge }", vendor.hourlyCharge);
-  sysPrompt = sysPrompt.replaceAll(
-    "{ date_now }",
-    formatDateTimeInTimezone(timezone),
-  );
+  sysPrompt = sysPrompt.replaceAll("{ date_now }", dateNow);
 
   const result = streamText({
-    model: anthropic("claude-3-haiku-20240307"),
-    // model: anthropic("claude-3-5-haiku-20241022"),
+    model: anthropic(ANTHROPIC_MODEL),
     system: sysPrompt,
     messages,
     tools: {
@@ -100,7 +104,7 @@ export async function POST(
             .describe("The date to check schedule availability"),
         }),
         execute: async ({ date }) => {
-          console.log("execute", date);
+          console.log("checkSchedule", date);
           const schedule = await lookupSchedule();
 
           // Transform schedule to a conversation-friendly format
@@ -112,6 +116,23 @@ export async function POST(
           return {
             toolCallId: "checkSchedule",
             result: `Available time blocks today: ${scheduleDescription}`,
+          };
+        },
+      }),
+      sendText: tool({
+        description:
+          "After the client confirms the booking, send a text message with the booking details",
+        parameters: z.object({
+          textMessage: z
+            .string()
+            .describe("The short message with the booking details"),
+        }),
+        execute: async ({ textMessage }) => {
+          console.log("sendText", textMessage);
+          await sendText(textMessage, user.phone);
+          return {
+            toolCallId: "sendText",
+            result: "Message sent",
           };
         },
       }),

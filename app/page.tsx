@@ -1,9 +1,15 @@
-import ChatInterface from '@/components/ChatInterface';
+import SidebarNav from "@/components/SidebarNav";
+import { getVendors } from "@/app/api/vendor";
+
+const vendors = Object.entries(getVendors()).map(([k, v]): [string, string] => [
+  k,
+  v.name,
+]);
 
 export default function Home() {
   return (
-    <main className="bg-white flex min-h-screen flex-col items-center justify-between">
-      <ChatInterface vendorId="id_a" />
+    <main>
+      <SidebarNav vendors={vendors} />
     </main>
   );
 }

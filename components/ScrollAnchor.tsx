@@ -1,37 +1,36 @@
-import * as React from 'react';
-import { useInView } from 'react-intersection-observer';
+import * as React from "react";
+import { useInView } from "react-intersection-observer";
 
 // Credit:  https://tuffstuff9.hashnode.dev/intuitive-scrolling-for-chatbot-message-streaming
 
 interface ChatScrollAnchorProps {
-    trackVisibility: boolean;
-    isAtBottom: boolean;
-    scrollAreaRef: React.RefObject<HTMLDivElement | null>;
+  trackVisibility: boolean;
+  isAtBottom: boolean;
+  scrollAreaRef: React.RefObject<HTMLDivElement | null>;
 }
 
 function ChatScrollAnchor({
-    trackVisibility,
-    isAtBottom,
-    scrollAreaRef,
+  trackVisibility,
+  isAtBottom,
+  scrollAreaRef,
 }: ChatScrollAnchorProps) {
-    const { ref, inView, entry } = useInView({
-        trackVisibility,
-        delay: 100,
-    });
+  const { ref, inView, entry } = useInView({
+    trackVisibility,
+    delay: 100,
+  });
 
-    React.useEffect(() => {
-        if (isAtBottom && trackVisibility && !inView) {
-            if (!scrollAreaRef.current) return;
+  React.useEffect(() => {
+    if (isAtBottom && trackVisibility && !inView) {
+      if (!scrollAreaRef.current) return;
 
-            const scrollAreaElement = scrollAreaRef.current;
+      const scrollAreaElement = scrollAreaRef.current;
 
-            scrollAreaElement.scrollTop =
-                scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
-        }
-    }, [inView, entry, isAtBottom, trackVisibility]);
+      scrollAreaElement.scrollTop =
+        scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
+    }
+  }, [inView, entry, isAtBottom, trackVisibility, scrollAreaRef]);
 
-    return <div ref={ref} className='h-px w-full' />;
+  return <div ref={ref} className="h-px w-full" />;
 }
-
 
 export default ChatScrollAnchor;

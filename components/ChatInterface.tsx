@@ -36,7 +36,7 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault(); // Prevent default newline
-      handleSubmit(e as any);
+      handleSubmit(e);
     }
   };
 
@@ -203,7 +203,7 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
             rows={3}
-            className="flex-grow p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="text-gray-700 flex-grow p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
           <button
             disabled={isLoading}
