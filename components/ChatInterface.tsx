@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState, KeyboardEvent } from "react";
 import Markdown from "react-markdown";
-// import { ToolInvocation } from "ai";
+import { ToolInvocation } from "ai";
 import { useChat } from "ai/react";
 import { Bot, User, Send } from "lucide-react";
 import ChatScrollAnchor from "./ScrollAnchor";
@@ -15,6 +15,7 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
   // CHAT HANDLERS
   const {
     append,
+    addToolResult,
     messages,
     input,
     handleInputChange,
@@ -22,7 +23,7 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
     isLoading,
   } = useChat({
     api: `/api/chat/${vendorId}`,
-    maxSteps: 2,
+    // maxSteps: 2,
     body: {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
@@ -50,6 +51,7 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
   // SCROLL HANDLERS
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const formInputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleScroll = () => {
     if (!scrollAreaRef.current) return;
@@ -71,6 +73,9 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
         scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
 
       setIsAtBottom(true);
+    } else if (formInputRef.current) {
+      // Restore focus to the input.
+      formInputRef.current.focus();
     }
   }, [isLoading]);
 
@@ -131,9 +136,40 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
                 `}
               >
                 <Markdown>{message.content}</Markdown>
-                {/*
                 {message.toolInvocations?.length &&
                   message.toolInvocations.map((toolInvoke: ToolInvocation) => {
+                    if (toolInvoke.toolName === "askForConfirmation") {
+                      const addResult = (result: string) =>
+                        addToolResult({
+                          toolCallId: toolInvoke.toolCallId,
+                          result,
+                        });
+                      return (
+                        <div key={toolInvoke.toolCallId}>
+                          {toolInvoke.args.message}
+                          <div>
+                            {"result" in toolInvoke ? (
+                              <b>{toolInvoke.result}</b>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => addResult("Yes")}
+                                  className="px-4 py-1 bg-green-500 rounded-full text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-200 transition-colors duration-200"
+                                >
+                                  Yes
+                                </button>
+                                <button
+                                  onClick={() => addResult("No")}
+                                  className="mx-4 px-4 py-1 bg-red-500 rounded-full text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors duration-200"
+                                >
+                                  No
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
                     return "result" in toolInvoke ? (
                       <Markdown key={toolInvoke.toolCallId}>
                         {toolInvoke.result.result}
@@ -142,7 +178,6 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
                       <div key={toolInvoke.toolCallId} />
                     );
                   })}
-                  */}
               </div>
             </div>
           ))}
@@ -161,6 +196,7 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
           className="max-w-2xl mx-auto flex items-center space-x-2"
         >
           <textarea
+          ref={formInputRef}
             disabled={isLoading}
             value={input}
             onChange={handleInputChange}

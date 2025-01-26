@@ -23,6 +23,22 @@ function formatDateTimeInTimezone(timezone: string) {
   return new Intl.DateTimeFormat("en-US", options).format(new Date());
 }
 
+export function errorHandler(error: unknown) {
+  if (error == null) {
+    return "unknown error";
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return JSON.stringify(error);
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ vendorId: string }> },
@@ -99,8 +115,20 @@ export async function POST(
           };
         },
       }),
+      askForConfirmation: tool({
+        description: "Ask the user for confirmation to book the service.",
+        parameters: z.object({
+          message: z
+            .string()
+            .describe("The message to display when asking for confirmation."),
+        }),
+      }),
     },
+    maxSteps: 2,
   });
 
-  return result.toDataStreamResponse();
+  return result.toDataStreamResponse({
+    // For debugging...
+    getErrorMessage: errorHandler,
+  });
 }
