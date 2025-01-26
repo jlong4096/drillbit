@@ -129,7 +129,11 @@ export async function POST(
         }),
         execute: async ({ textMessage }) => {
           console.log("sendText", textMessage);
-          await sendText(textMessage, user.phone);
+          try {
+            await sendText(textMessage, user.phone);
+          } catch (e) {
+            throw new Error(`Could not send SMS: ${e}`);
+          }
           return {
             toolCallId: "sendText",
             result: "Message sent",

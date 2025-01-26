@@ -29,9 +29,9 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
     },
   });
 
-  useEffect(() => {
-    console.log(JSON.stringify(messages));
-  }, [messages]);
+  // useEffect(() => {
+  //   console.log(JSON.stringify(messages));
+  // }, [messages]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -82,7 +82,7 @@ const ChatInterface = ({ vendorId }: ChatInterfaceProps) => {
   return (
     <div className="w-[50%] flex flex-col h-screen bg-gray-50">
       <div
-        className="flex-grow overflow-y-auto py-4 px-4"
+        className="no-scrollbar flex-grow overflow-y-auto py-4 px-4"
         ref={scrollAreaRef}
         onScroll={handleScroll}
       >
